@@ -8,8 +8,8 @@ class Database
     // AJUSTE ESTAS CONFIGURAÇÕES CONFORME SEU AMBIENTE
     private const HOST = 'localhost';
     private const DB_NAME = 'studycards_db';
-    private const USER = 'root';     // ← Seu usuário MySQL
-    private const PASS = '';         // ← Sua senha MySQL
+    private const USER = 'teste';     // ← Seu usuário MySQL
+    private const PASS = '1234';         // ← Sua senha MySQL
     private const CHARSET = 'utf8mb4';
 
     public static function getConexao(): PDO
