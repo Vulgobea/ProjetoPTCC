@@ -1,7 +1,7 @@
 <?php
 // Pessoa.php - Classe Base para Pessoas/Usuários
 
-require_once 'Database.php';
+require_once BASE_PATH .'/core/Database.php';
 
 // Observação: remover 'use PDO' e 'use PDOException' (não necessários)
 class Pessoa {

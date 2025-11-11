@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 // Importa a classe AlgoritmoSRS, pois faremos referência a ela.
 // Mesmo que o arquivo ainda não exista, já declaramos a dependência.
-require_once 'AlgoritmoSRS.php';
+require_once BASE_PATH .'/models/AlgoritmoSRS.php';
 
 /**
  * Classe base abstrata para qualquer item que precise ser revisado

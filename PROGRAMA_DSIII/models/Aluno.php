@@ -1,5 +1,5 @@
 <?php
-require_once '../core/Database.php';
+require_once BASE_PATH .'/core/Database.php';
 
 class Aluno {
     private $id_aluno;

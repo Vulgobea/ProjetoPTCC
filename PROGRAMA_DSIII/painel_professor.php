@@ -1,4 +1,6 @@
 <?php
+define('BASE_PATH', __DIR__);
+define('BASE_PATH', dirname(__DIR__));
 session_start();
 require_once 'core/Database.php';
 require_once 'models/ProfessorModel.php';

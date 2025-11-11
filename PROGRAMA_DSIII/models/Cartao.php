@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once 'MaterialEstudo.php';
+require_once BASE_PATH .'/models/MaterialEstudo.php';
 
 /**
  * Representa um "flashcard" com frente (pergunta) e verso (resposta).

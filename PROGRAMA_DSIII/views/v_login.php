@@ -341,7 +341,7 @@
         <div class="logo-container">
             <div class="logo">
                 <i class="fas fa-brain"></i>
-                <h1>Curva Adaptativa</h1>
+                <h1>StudyCards</h1>
             </div>
         </div>
 
@@ -365,7 +365,7 @@
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="processa_login.php">
+            <form method="POST" action='controller/processa_login.php'>
                 <div class="form-group">
                     <label class="form-label" for="nome_usuario">E-mail ou Usuário</label>
                     <div class="input-wrapper">

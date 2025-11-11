@@ -1,6 +1,7 @@
 <?php
-require_once '../core/Database.php';
-require_once 'BaralhoRepository.php'; // Vamos usar isso!
+require_once BASE_PATH .'/models/Aluno.php';
+require_once BASE_PATH .'/core/Database.php';
+require_once BASE_PATH .'/models/BaralhoRepository.php'; // Vamos usar isso!
 
 class ProfessorModel {
 

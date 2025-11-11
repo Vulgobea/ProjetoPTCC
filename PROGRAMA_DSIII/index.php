@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+define('BASE_PATH', __DIR__);
+
+
 
 // Inicia a sessão primeiro, antes de qualquer uso de variáveis de sessão
 session_start();
@@ -14,12 +17,12 @@ if (!isset($_SESSION['id_aluno'])) {
 date_default_timezone_set('America/Sao_Paulo');
 
 // Incluir classes
-require_once 'core/Database.php';
-require_once 'AlgoritmoSRS.php';
-require_once 'MaterialEstudo.php';
-require_once 'Cartao.php';
-require_once 'CartaoRepository.php';
-require_once 'BaralhoRepository.php';
+require_once BASE_PATH . '/core/Database.php';
+require_once BASE_PATH .'/models/AlgoritmoSRS.php';
+require_once BASE_PATH .'/models/MaterialEstudo.php';
+require_once BASE_PATH .'/models/Cartao.php';
+require_once BASE_PATH .'/models/CartaoRepository.php';
+require_once BASE_PATH .'/models/BaralhoRepository.php';
 
 // Inicializar repositórios
 $cartaoRepo = new CartaoRepository();

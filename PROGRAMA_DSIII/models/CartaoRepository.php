@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require_once 'Database.php';
-require_once 'Cartao.php';
+require_once BASE_PATH .'/core/Database.php';
+require_once BASE_PATH .'/models/Cartao.php';
 
 class CartaoRepository
 {

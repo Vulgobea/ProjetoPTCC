@@ -1,4 +1,6 @@
 <?php
+define('BASE_PATH', __DIR__);
+
 // CadastroAluno.php - Interface de Cadastro MELHORADA
 
 session_start();

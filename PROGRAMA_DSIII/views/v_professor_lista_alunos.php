@@ -27,6 +27,6 @@
             <?php endforeach; ?>
         </tbody>
     </table>
-    <a href="logout.php">Sair</a>
+    <a href="controller/logout.php">Sair</a>
 </body>
 </html>

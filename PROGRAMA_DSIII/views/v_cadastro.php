@@ -162,7 +162,7 @@
         <div class="logo-container">
             <div class="logo">
                 <i class="fas fa-brain"></i>
-                <h1>Curva Adaptativa</h1>
+                <h1>StudyCards</h1>
             </div>
         </div>
 
@@ -179,7 +179,7 @@
                 </div>
             <?php endif; ?>
 
-            <form action="processa_aluno.php" method="POST">
+            <form action='controller/processa_aluno.php' method="POST">
                 <!-- Dados Pessoais -->
                 <div class="form-group">
                     <label class="form-label" for="nome">Nome Completo <span class="required">*</span></label>

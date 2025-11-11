@@ -476,7 +476,7 @@
     </div>
     <!-- Botão de logout -->
     <div>
-        <a href="logout.php" style="color: #ff6b6b; font-weight: bold; text-decoration: none; margin-left: 20px;">Sair</a>
+        <a href='controller/logout.php' style="color: #ff6b6b; font-weight: bold; text-decoration: none; margin-left: 20px;">Sair</a>
     </div>
 </div>
 
