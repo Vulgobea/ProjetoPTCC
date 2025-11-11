@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require_once BASE_PATH .'/core/Database.php';
-require_once BASE_PATH .'/models/Cartao.php';
+// Caminhos corrigidos para usar BASE_PATH (que é definido no index.php)
+require_once BASE_PATH . '/core/Database.php';
+require_once BASE_PATH . '/models/Cartao.php';
 
 class CartaoRepository
 {
@@ -19,6 +20,7 @@ class CartaoRepository
         return $cartoes;
     }
 
+    // AQUI ESTÁ A FUNÇÃO QUE O ERRO DIZ ESTAR FALTANDO
     public function buscarProximoParaRevisao(int $metodoEstudoId): ?Cartao
     {
         $sql = "SELECT * FROM Cards 

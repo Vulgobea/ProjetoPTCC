@@ -1,8 +1,8 @@
-<<?php
+<?php
+define('BASE_PATH', dirname(__DIR__));
+session_start();
 error_log("POST recebido: " . print_r($_POST, true));
 
-// processa_aluno.php
-session_start();
 
 // ATIVAR ERROS NA TELA - Use isso para o ambiente de desenvolvimento
 ini_set('display_errors', 1); // Altere para 0 em produção quando quiser suprimir

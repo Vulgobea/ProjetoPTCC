@@ -9,7 +9,7 @@ class ProfessorModel {
      * Lista todos os alunos (como o seu Administrador->listaCadastrados)
      */
     public function listarAlunos() {
-        $sql = "SELECT id_aluno, nome, email FROM Aluno WHERE tipo_usuario = 'aluno'";
+        $sql = "SELECT id_aluno, nome, email FROM aluno";
         return Database::buscarTodos($sql);
     }
 

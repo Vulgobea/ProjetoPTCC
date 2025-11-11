@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyCards - Repetição Espaçada</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -463,7 +464,7 @@
 <body>
     <div class="container">
         <div class="header">
-    <h1>📚 StudyCards</h1>
+    <h1><i class="fas fa-brain"></i> StudyCards</h1>
     <div class="header-stats">
         <div class="header-stat">
             <div class="header-stat-value"><?= $totalParaRevisar ?></div>
@@ -474,9 +475,8 @@
             <div class="header-stat-label">Taxa de Acerto</div>
         </div>
     </div>
-    <!-- Botão de logout -->
     <div>
-        <a href='controller/logout.php' style="color: #ff6b6b; font-weight: bold; text-decoration: none; margin-left: 20px;">Sair</a>
+        <a href="Controller/logout.php" style="color: #ff6b6b; font-weight: bold; text-decoration: none; margin-left: 20px;">Sair</a>
     </div>
 </div>
 
@@ -491,7 +491,6 @@
             <button class="nav-tab" onclick="showSection('stats')">📊 Estatísticas</button>
         </div>
 
-        <!-- Study Section -->
         <div id="study" class="content-section active">
             <div class="study-area">
                 <h2 class="study-title">Sessão de Estudos</h2>
@@ -528,7 +527,6 @@
             </div>
         </div>
 
-        <!-- Decks Section -->
         <div id="decks" class="content-section">
             <div class="deck-grid">
                 <?php foreach ($baralhos as $baralho): 
@@ -554,7 +552,6 @@
             </div>
         </div>
 
-        <!-- New Card Section -->
         <div id="new" class="content-section">
             <div class="form-container">
                 <h2 class="form-title">Adicionar Novo Cartão</h2>
@@ -589,7 +586,29 @@
             </div>
         </div>
 
-        <!-- Statistics Section -->
+        <div id="new-deck" class="content-section">
+            <div class="form-container">
+                <h2 class="form-title">Criar Novo Baralho</h2>
+                
+                <form id="formNovoBaralho" onsubmit="adicionarBaralho(event)">
+                    <div class="form-group">
+                        <label>Nome do Baralho (Matéria)</label>
+                        <input type="text" name="materia" placeholder="Ex: PHP Orientado a Objetos" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição (Opcional)</label>
+                        <textarea name="descricao" placeholder="Ex: Conceitos fundamentais de POO em PHP"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit">
+                        💾 Salvar Baralho
+                    </button>
+                </form>
+            </div>
+        </div>
+
+
         <div id="stats" class="content-section">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -644,9 +663,14 @@
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
+
+            // Correção: Garante que o evento.target exista antes de usá-lo
+            // O botão "Criar Novo Baralho" não é um 'nav-tab', então tratamos ele
+            if (event && event.target.classList.contains('nav-tab')) {
+                event.target.classList.add('active');
+            }
             
             document.getElementById(sectionId).classList.add('active');
-            event.target.classList.add('active');
         }
 
         function flipCard() {
@@ -720,6 +744,39 @@
             .catch(error => {
                 console.error('Erro:', error);
                 alert('Erro ao adicionar cartão');
+            });
+        }
+
+        /* ***** MUDANÇA 3: Adicionada a função 'adicionarBaralho' (JavaScript) ***** */
+        function adicionarBaralho(event) {
+            // Impede o envio normal do formulário
+            event.preventDefault(); 
+            
+            // Pega os dados do formulário que acabamos de criar
+            const form = document.getElementById('formNovoBaralho');
+            const formData = new FormData(form);
+            
+            // Esta é a 'action' que o index.php espera
+            formData.append('action', 'criar_baralho'); 
+
+            fetch('index.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Mostra a mensagem de sucesso do index.php
+                alert(data.message); 
+                
+                if (data.success) {
+                    form.reset();
+                    // Recarrega a página para mostrar o novo baralho na lista
+                    setTimeout(() => location.reload(), 500); 
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao criar baralho');
             });
         }
     </script>

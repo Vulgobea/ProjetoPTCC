@@ -1,7 +1,8 @@
 <?php
+define('BASE_PATH', dirname(__DIR__));
+session_start();
 // processa_login.php - Processa a tentativa de login e inicia a sessão
 
-session_start();
 ini_set('display_errors', 0);
 error_reporting(0);
 
