@@ -619,13 +619,13 @@
 
                 <div class="stat-card">
                     <div class="stat-card-icon">🔥</div>
-                    <div class="stat-card-value">12</div>
+                    <div class="stat-card-value"><?= $diasConsecutivos ?></div>
                     <div class="stat-card-label">Dias Consecutivos</div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-card-icon">⏱️</div>
-                    <div class="stat-card-value">45min</div>
+                    <div class="stat-card-value"><?= formatarTempo($tempoEstudoHoje) ?></div>
                     <div class="stat-card-label">Tempo de Estudo Hoje</div>
                 </div>
 
@@ -637,15 +637,38 @@
             </div>
 
             <div class="calendar-card">
-                <h3 class="calendar-title">📅 Calendário de Revisões</h3>
-                <div class="calendar-item">Hoje: <?= $totalParaRevisar ?> cartões</div>
-                <div class="calendar-item">Amanhã: 8 cartões</div>
-                <div class="calendar-item">Em 2 dias: 12 cartões</div>
-                <div class="calendar-item">Em 4 dias: 6 cartões</div>
-                <div class="calendar-item">Em 8 dias: 4 cartões</div>
-            </div>
-        </div>
-    </div>
+    <h3 class="calendar-title">📅 Calendário de Revisões</h3>
+
+    <div class="calendar-item">Hoje: <?= $totalParaRevisar ?> cartões</div>
+
+    <?php if (empty($calendario)): ?>
+
+        <div class="calendar-item">Nenhuma revisão futura agendada.</div>
+
+    <?php else: ?>
+
+        <?php 
+        // Loop para processar os dados do banco
+        foreach ($calendario as $item): 
+            $data = new DateTime($item['data_revisao']);
+            $hoje = new DateTime();
+            $amanha = new DateTime('tomorrow');
+
+            $labelData = '';
+            // Formatação da data
+            if ($data->format('Y-m-d') == $amanha->format('Y-m-d')) {
+                $labelData = 'Amanhã';
+            } else {
+                // Calcula a diferença de dias
+                $dias = $hoje->diff($data)->days;
+                $labelData = "Em $dias dias";
+            }
+        ?>
+            <div class="calendar-item"><?= $labelData ?>: <?= $item['total'] ?> cartões</div>
+
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
 
     <script>
         let isFlipped = false;
@@ -779,6 +802,34 @@
                 alert('Erro ao criar baralho');
             });
         }
+
+        setInterval(function() {
+    // Cria os dados do formulário
+    const formData = new FormData();
+    formData.append('action', 'registrar_tempo');
+    formData.append('segundos', 30); // Informa que 30 segundos se passaram
+
+    // Envia os dados para o index.php
+    fetch('index.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Ping salvo com sucesso
+            console.log('Tempo de estudo salvo.');
+        } else {
+            console.error('Falha ao salvar tempo de estudo.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro no ping de tempo:', error);
+    });
+
+}, 30000); // 30000 milissegundos = 30 segundos
+// ============================
+
     </script>
 </body>
 </html>

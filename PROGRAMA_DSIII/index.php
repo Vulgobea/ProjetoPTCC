@@ -7,6 +7,25 @@ define('BASE_PATH', __DIR__);
 // Inicia a sessão primeiro, antes de qualquer uso de variáveis de sessão
 session_start();
 
+/** Formata um tempo em segundos para uma string legível (ex: "1h 30min")
+ */
+function formatarTempo(int $segundos): string {
+    if ($segundos < 60) {
+        return "{$segundos}s";
+    }
+    $minutos = floor($segundos / 60);
+    if ($minutos < 60) {
+        return "{$minutos}min";
+    }
+    $horas = floor($minutos / 60);
+    $minutosRestantes = $minutos % 60;
+
+    if ($minutosRestantes == 0) {
+        return "{$horas}h";
+    }
+    return "{$horas}h {$minutosRestantes}min";
+}
+
 // Verifica se o usuário está logado
 if (!isset($_SESSION['id_aluno'])) {
     header("Location: login.php");
@@ -52,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $cartao->responder($acertou, $algoritmo);
                         $cartaoRepo->atualizar($cartaoId, $cartao, $acertou);
                         $cartaoRepo->registrarHistorico($cartaoId, $acertou, $nivelAnterior, $cartao->getNivelAprendizagem());
+                        $cartaoRepo->registrarEstudoDiario($perfilCodigo, $acertou);
                         
                         echo json_encode([
                             'success' => true,
@@ -110,9 +130,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
                 }
                 exit;
-        }
+
+                case 'registrar_tempo':
+            try {
+                $segundos = (int)($_POST['segundos'] ?? 0);
+                if ($segundos > 0) {
+                    $cartaoRepo->adicionarTempoEstudo($perfilCodigo, $segundos);
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Segundos inválidos']);
+                }
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
+            }
+            exit;
+        
     }
 }
+        }
+    
 
 // Buscar dados
 $baralhos = $baralhoRepo->buscarComEstatisticas($perfilCodigo);
@@ -146,6 +182,11 @@ foreach ($baralhos as $baralho) {
 
 if ($totalRevisoes > 0) {
     $taxaAcerto = round(($totalAcertos / $totalRevisoes) * 100);
+    $calendario = $cartaoRepo->getCalendarioRevisoes($perfilCodigo);
+    $diasConsecutivos = $cartaoRepo->getDiasConsecutivos($perfilCodigo);
+    $statsHoje = $cartaoRepo->getEstatisticasHoje($perfilCodigo);
+    $tempoEstudoHoje = $statsHoje['tempoEstudo'] ?? 0; // Pega o tempo de hoje ou 0
+    $cartaoAtual = null;
 }
 require_once 'views/v_dashboard.php';
 ?>

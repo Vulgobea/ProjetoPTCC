@@ -10,6 +10,7 @@ class Aluno {
     private $cpf;
     private $senha; 
     private $nivelFoco;
+    private $tipo_usuario;
 
     public function __construct() {}
 
@@ -37,6 +38,9 @@ class Aluno {
 
     public function setNivelFoco($nivelFoco) { $this->nivelFoco = $nivelFoco; }
     public function getNivelFoco() { return $this->nivelFoco; }
+
+    public function setTipoUsuario($tipo) { $this->tipo_usuario = $tipo; }
+    public function getTipoUsuario() { return $this->tipo_usuario; }
 
     // =================== VERIFICA DUPLICIDADE ===================
     public function existeUsuario(): bool {
@@ -104,6 +108,9 @@ class Aluno {
                 WHERE a.email = :email OR a.nome_usuario = :usuario
                 LIMIT 1";
 
+        $sql = "SELECT a.id_aluno, a.nome_usuario, a.email, a.senha_hash, a.nivel_foco, p.nome, a.telefone, a.cpf, a.tipo_usuario
+        FROM aluno a
+
         try {
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':email', $login, PDO::PARAM_STR);
@@ -121,6 +128,7 @@ class Aluno {
                 $aluno->setCpf($dados['cpf']);
                 $aluno->setNivelFoco($dados['nivel_foco']);
                 $aluno->setSenha($dados['senha_hash']);
+                $aluno->setTipoUsuario($dados['tipo_usuario']);
                 return $aluno;
             }
             return null;

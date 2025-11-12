@@ -37,13 +37,19 @@ try {
     $alunoAutenticado = Aluno::autenticar($login, $senha);
 
     if ($alunoAutenticado) {
-        // Sucesso na autenticação: inicia a sessão
-        $_SESSION['id_aluno'] = $alunoAutenticado->getIdAluno();
-        $_SESSION['nome_aluno'] = $alunoAutenticado->getNome();
-        
-        // Redireciona para a página principal
-        header("Location: ../index.php");
-        exit();
+    // Sucesso na autenticação: inicia a sessão
+    $_SESSION['id_aluno'] = $alunoAutenticado->getIdAluno();
+    $_SESSION['nome_aluno'] = $alunoAutenticado->getNome();
+
+    // A MUDANÇA ESTÁ AQUI: Salvamos o tipo e decidimos para onde ir
+    $_SESSION['tipo_usuario'] = $alunoAutenticado->getTipoUsuario();
+
+    if ($_SESSION['tipo_usuario'] === 'professor') {
+        header("Location: ../painel_professor.php"); // Redireciona o professor
+    } else {
+        header("Location: ../index.php"); // Redireciona o aluno
+    }
+    exit();
         
     } else {
         // Falha na autenticação (usuário não encontrado ou senha incorreta)

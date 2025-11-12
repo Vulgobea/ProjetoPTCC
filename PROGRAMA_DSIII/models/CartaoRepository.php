@@ -20,7 +20,6 @@ class CartaoRepository
         return $cartoes;
     }
 
-    // AQUI ESTÁ A FUNÇÃO QUE O ERRO DIZ ESTAR FALTANDO
     public function buscarProximoParaRevisao(int $metodoEstudoId): ?Cartao
     {
         $sql = "SELECT * FROM Cards 
@@ -136,4 +135,112 @@ class CartaoRepository
         
         return Database::buscarUm($sql, [$metodoEstudoId]) ?? [];
     }
-}
+    
+    // ===============================================
+    // ==== FUNÇÕES DE ESTATÍSTICAS ADICIONADAS ====
+    // ===============================================
+
+    /**
+     * Registra um estudo (acerto ou erro) na tabela de estatísticas diárias.
+     */
+    public function registrarEstudoDiario(int $perfilCodigo, bool $acertou): void
+    {
+        $acertoValor = $acertou ? 1 : 0;
+        $erroValor = $acertou ? 0 : 1;
+
+        $sql = "INSERT INTO EstatisticasDiarias (perfilCodigo, data, cartoesRevisados, acertos, erros)
+                VALUES (?, CURDATE(), 1, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                cartoesRevisados = cartoesRevisados + 1,
+                acertos = acertos + VALUES(acertos),
+                erros = erros + VALUES(erros)";
+        
+        Database::executar($sql, [$perfilCodigo, $acertoValor, $erroValor]);
+    }
+
+    /**
+     * Busca um resumo das revisões futuras agrupadas por data.
+     */
+    public function getCalendarioRevisoes(int $perfilCodigo, int $limite = 5): array
+    {
+        $sql = "SELECT 
+                    DATE(c.dataProximaRevisao) as data_revisao, 
+                    COUNT(c.id) as total
+                FROM Cards c
+                JOIN MetodosEstudo m ON c.metodoEstudoId = m.id
+                WHERE m.perfilCodigo = ? 
+                  AND c.dataProximaRevisao > CURDATE()
+                GROUP BY DATE(c.dataProximaRevisao)
+                ORDER BY data_revisao ASC
+                LIMIT $limite";
+        
+        return Database::buscarTodos($sql, [$perfilCodigo]);
+    }
+
+    /**
+     * Calcula os dias consecutivos de estudo.
+     */
+    public function getDiasConsecutivos(int $perfilCodigo): int
+    {
+        $sql = "SELECT DISTINCT data FROM EstatisticasDiarias
+                WHERE perfilCodigo = ?
+                ORDER BY data DESC";
+
+        $resultados = Database::buscarTodos($sql, [$perfilCodigo]);
+
+        if (empty($resultados)) {
+            return 0; // Nunca estudou
+        }
+
+        $diasConsecutivos = 0;
+        $hoje = new DateTime('today');
+        $ontem = new DateTime('yesterday');
+
+        $dataMaisRecente = new DateTime($resultados[0]['data']);
+
+        if ($dataMaisRecente == $hoje || $dataMaisRecente == $ontem) {
+            $diasConsecutivos = 1; 
+            $dataAnterior = $dataMaisRecente;
+
+            for ($i = 1; $i < count($resultados); $i++) {
+                $dataAtual = new DateTime($resultados[$i]['data']);
+                $dataEsperada = (clone $dataAnterior)->modify('-1 day');
+
+                if ($dataAtual == $dataEsperada) {
+                    $diasConsecutivos++; 
+                    $dataAnterior = $dataAtual;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return $diasConsecutivos;
+    }
+    
+    /**
+     * Adiciona segundos ao tempo de estudo do dia.
+     */
+    public function adicionarTempoEstudo(int $perfilCodigo, int $segundos): void
+    {
+        $sql = "INSERT INTO EstatisticasDiarias (perfilCodigo, data, tempoEstudo)
+                VALUES (?, CURDATE(), ?)
+                ON DUPLICATE KEY UPDATE
+                tempoEstudo = tempoEstudo + VALUES(tempoEstudo)";
+        
+        Database::executar($sql, [$perfilCodigo, $segundos]);
+    }
+
+    /**
+     * Busca as estatísticas completas para o dia de HOJE.
+     */
+    public function getEstatisticasHoje(int $perfilCodigo): ?array
+    {
+        $sql = "SELECT * FROM EstatisticasDiarias
+                WHERE perfilCodigo = ? AND data = CURDATE()";
+        
+        return Database::buscarUm($sql, [$perfilCodigo]);
+    }
+
+} // <- Fim da classe
+?>
