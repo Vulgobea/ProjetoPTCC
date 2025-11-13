@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require_once BASE_PATH .'/core/Database.php';
-require_once BASE_PATH .'/models/Cartao.php';
+// Caminho corrigido para usar a constante BASE_PATH
+require_once BASE_PATH . '/core/Database.php';
 
 class BaralhoRepository
 {
@@ -25,12 +25,14 @@ class BaralhoRepository
         return (int) Database::ultimoId();
     }
 
+    // Função que usaremos para editar
     public function atualizar(int $id, string $materia, string $descricao): void
     {
         $sql = "UPDATE MetodosEstudo SET materia = ?, descricao = ? WHERE id = ?";
         Database::executar($sql, [$materia, $descricao, $id]);
     }
 
+    // Função que usaremos para deletar
     public function deletar(int $id): void
     {
         $sql = "DELETE FROM MetodosEstudo WHERE id = ?";
@@ -56,3 +58,4 @@ class BaralhoRepository
         return Database::buscarTodos($sql, [$perfilCodigo]);
     }
 }
+?>
