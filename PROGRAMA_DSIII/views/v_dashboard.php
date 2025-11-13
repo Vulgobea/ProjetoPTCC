@@ -95,13 +95,18 @@
             color: white;
         }
 
+        /* CSS para o Efeito FADE */
         .content-section {
             display: none;
+            opacity: 0; /* Começa invisível */
+            transition: opacity 0.4s ease-in-out; /* A mágica do fade! */
         }
 
         .content-section.active {
             display: block;
+            opacity: 1; /* Fica visível quando 'active' */
         }
+        /* Fim do CSS para FADE */
 
         .study-area {
             background: #1a1a2e;
@@ -464,7 +469,9 @@
 <body>
     <div class="container">
         <div class="header">
+    
     <h1><i class="fas fa-brain"></i> StudyCards</h1>
+
     <div class="header-stats">
         <div class="header-stat">
             <div class="header-stat-value"><?= $totalParaRevisar ?></div>
@@ -485,10 +492,10 @@
         </div>
 
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showSection('study')">🎯 Estudar</button>
-            <button class="nav-tab" onclick="showSection('decks')">📦 Meus Baralhos</button>
-            <button class="nav-tab" onclick="showSection('new')">➕ Novo Cartão</button>
-            <button class="nav-tab" onclick="showSection('stats')">📊 Estatísticas</button>
+            <button class="nav-tab active" onclick="showSection('study', event)">🎯 Estudar</button>
+            <button class="nav-tab" onclick="showSection('decks', event)">📦 Meus Baralhos</button>
+            <button class="nav-tab" onclick="showSection('new', event)">➕ Novo Cartão</button>
+            <button class="nav-tab" onclick="showSection('stats', event)">📊 Estatísticas</button>
         </div>
 
         <div id="study" class="content-section active">
@@ -546,7 +553,7 @@
                     </div>
                 <?php endforeach; ?>
 
-                <div class="create-deck-button" onclick="showSection('new-deck')">
+                <div class="create-deck-button" onclick="showSection('new-deck', event)">
                     ➕ Criar Novo Baralho
                 </div>
             </div>
@@ -637,38 +644,34 @@
             </div>
 
             <div class="calendar-card">
-    <h3 class="calendar-title">📅 Calendário de Revisões</h3>
-
-    <div class="calendar-item">Hoje: <?= $totalParaRevisar ?> cartões</div>
-
-    <?php if (empty($calendario)): ?>
-
-        <div class="calendar-item">Nenhuma revisão futura agendada.</div>
-
-    <?php else: ?>
-
-        <?php 
-        // Loop para processar os dados do banco
-        foreach ($calendario as $item): 
-            $data = new DateTime($item['data_revisao']);
-            $hoje = new DateTime();
-            $amanha = new DateTime('tomorrow');
-
-            $labelData = '';
-            // Formatação da data
-            if ($data->format('Y-m-d') == $amanha->format('Y-m-d')) {
-                $labelData = 'Amanhã';
-            } else {
-                // Calcula a diferença de dias
-                $dias = $hoje->diff($data)->days;
-                $labelData = "Em $dias dias";
-            }
-        ?>
-            <div class="calendar-item"><?= $labelData ?>: <?= $item['total'] ?> cartões</div>
-
-        <?php endforeach; ?>
-    <?php endif; ?>
-</div>
+                <h3 class="calendar-title">📅 Calendário de Revisões</h3>
+                
+                <div class="calendar-item">Hoje: <?= $totalParaRevisar ?> cartões</div>
+                
+                <?php if (empty($calendario)): ?>
+                    <div class="calendar-item">Nenhuma revisão futura agendada.</div>
+                <?php else: ?>
+                    <?php 
+                    foreach ($calendario as $item): 
+                        $data = new DateTime($item['data_revisao']);
+                        $hoje = new DateTime();
+                        $amanha = new DateTime('tomorrow');
+                        
+                        $labelData = '';
+                        if ($data->format('Y-m-d') == $amanha->format('Y-m-d')) {
+                            $labelData = 'Amanhã';
+                        } else {
+                            $dias = $hoje->diff($data)->days;
+                            $labelData = "Em $dias dias";
+                        }
+                    ?>
+                        <div class="calendar-item"><?= $labelData ?>: <?= $item['total'] ?> cartões</div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+            
+        </div>
+    </div>
 
     <script>
         let isFlipped = false;
@@ -678,23 +681,36 @@
         };
         const cartaoId = <?= $cartaoAtual ? $cartaoAtual->id : 'null' ?>;
 
-        function showSection(sectionId) {
+        /* ============================================== */
+        /* ===== JAVASCRIPT 'showSection' CORRIGIDO ===== */
+        /* ============================================== */
+        function showSection(sectionId, event) {
+            // 1. Oculta todas as seções de conteúdo
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             
+            // 2. Remove 'active' de todas as ABAS
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
 
-            // Correção: Garante que o evento.target exista antes de usá-lo
-            // O botão "Criar Novo Baralho" não é um 'nav-tab', então tratamos ele
-            if (event && event.target.classList.contains('nav-tab')) {
-                event.target.classList.add('active');
+            // 3. Adiciona 'active' de volta à ABA que foi clicada
+            //    (Usando event.currentTarget, que é o <button> em si)
+            if (event && event.currentTarget && event.currentTarget.classList.contains('nav-tab')) {
+                event.currentTarget.classList.add('active');
             }
             
+            // 4. Se o clique veio do "Criar Baralho", re-ativa a aba "Meus Baralhos"
+            if (sectionId === 'new-deck') {
+                // Encontra a aba "Meus Baralhos" e a torna ativa
+                document.querySelector('button[onclick*="decks"]').classList.add('active');
+            }
+
+            // 5. Mostra a seção de conteúdo correta
             document.getElementById(sectionId).classList.add('active');
         }
+        /* ============================================== */
 
         function flipCard() {
             const card = document.getElementById('flashcard');
@@ -770,16 +786,12 @@
             });
         }
 
-        /* ***** MUDANÇA 3: Adicionada a função 'adicionarBaralho' (JavaScript) ***** */
         function adicionarBaralho(event) {
-            // Impede o envio normal do formulário
             event.preventDefault(); 
             
-            // Pega os dados do formulário que acabamos de criar
             const form = document.getElementById('formNovoBaralho');
             const formData = new FormData(form);
             
-            // Esta é a 'action' que o index.php espera
             formData.append('action', 'criar_baralho'); 
 
             fetch('index.php', {
@@ -788,12 +800,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Mostra a mensagem de sucesso do index.php
                 alert(data.message); 
                 
                 if (data.success) {
                     form.reset();
-                    // Recarrega a página para mostrar o novo baralho na lista
                     setTimeout(() => location.reload(), 500); 
                 }
             })
@@ -803,33 +813,31 @@
             });
         }
 
+        /**
+         * Timer de Tempo de Estudo
+         */
         setInterval(function() {
-    // Cria os dados do formulário
-    const formData = new FormData();
-    formData.append('action', 'registrar_tempo');
-    formData.append('segundos', 30); // Informa que 30 segundos se passaram
+            const formData = new FormData();
+            formData.append('action', 'registrar_tempo');
+            formData.append('segundos', 30); 
 
-    // Envia os dados para o index.php
-    fetch('index.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Ping salvo com sucesso
-            console.log('Tempo de estudo salvo.');
-        } else {
-            console.error('Falha ao salvar tempo de estudo.');
-        }
-    })
-    .catch(error => {
-        console.error('Erro no ping de tempo:', error);
-    });
-
-}, 30000); // 30000 milissegundos = 30 segundos
-// ============================
-
+            fetch('index.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Tempo de estudo salvo.');
+                } else {
+                    console.error('Falha ao salvar tempo de estudo.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro no ping de tempo:', error);
+            });
+            
+        }, 30000); // 30 segundos
     </script>
 </body>
 </html>

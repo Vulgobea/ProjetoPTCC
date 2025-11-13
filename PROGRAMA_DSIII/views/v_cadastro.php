@@ -155,6 +155,26 @@
 
         .login-link { text-align: center; margin-top: 24px; font-size: 14px; color: #6b7280; }
         .login-link a { color: #667eea; font-weight: 600; text-decoration: none; }
+        
+        /* ===== CSS NOVO PARA TIPO DE CONTA ===== */
+        .account-type-selector { display: flex; gap: 20px; }
+        .type-option {
+            flex: 1; display: flex; align-items: center; gap: 12px;
+            padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px;
+            cursor: pointer; background: white; transition: all 0.3s;
+        }
+        .type-option input[type="radio"] { /* Esconde o botão de rádio padrão */
+            opacity: 0; width: 0; height: 0; position: absolute;
+        }
+        .type-option i { font-size: 20px; color: #9ca3af; transition: all 0.3s; }
+        .type-option span { font-weight: 600; color: #374151; }
+        
+        .type-option.active { /* 'active' será nossa classe visual */
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+        }
+        .type-option.active i { color: #667eea; }
+        /* ======================================= */
     </style>
 </head>
 <body>
@@ -162,7 +182,7 @@
         <div class="logo-container">
             <div class="logo">
                 <i class="fas fa-brain"></i>
-                <h1>StudyCards</h1>
+                <h1>Curva Adaptativa</h1>
             </div>
         </div>
 
@@ -179,8 +199,7 @@
                 </div>
             <?php endif; ?>
 
-            <form action='controller/processa_aluno.php' method="POST">
-                <!-- Dados Pessoais -->
+            <form action="Controller/processa_aluno.php" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="nome">Nome Completo <span class="required">*</span></label>
                     <div class="input-wrapper">
@@ -215,7 +234,6 @@
                     </div>
                 </div>
 
-                <!-- Dados de Acesso -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="nome_Usuario">Nome de Usuário <span class="required">*</span></label>
@@ -234,7 +252,21 @@
                     </div>
                 </div>
 
-                <!-- Nível de Foco -->
+                <div class="form-group full-width">
+                    <label class="form-label">Tipo de Conta <span class="required">*</span></label>
+                    <div class="account-type-selector">
+                        <label class="type-option active">
+                            <input type="radio" name="tipo_usuario" value="aluno" checked onchange="selectAccountType(event)">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>Aluno</span>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="tipo_usuario" value="professor" onchange="selectAccountType(event)">
+                            <i class="fas fa-chalkboard-user"></i>
+                            <span>Professor</span>
+                        </label>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Nível de Foco <span class="required">*</span></label>
                     <div class="nivel-selector">
@@ -284,6 +316,13 @@
             event.currentTarget.classList.add('selected');
             document.getElementById('nivel' + nivel).checked = true;
         }
+
+        /* ===== FUNÇÃO JAVASCRIPT NOVA ===== */
+        function selectAccountType(event) {
+            document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+            event.currentTarget.closest('label').classList.add('active');
+        }
+        /* ================================== */
 
         document.getElementById('telefone').addEventListener('input', function(e) {
             let v = e.target.value.replace(/\D/g, '');

@@ -1,5 +1,5 @@
 <?php
-require_once BASE_PATH .'/core/Database.php';
+require_once BASE_PATH . '/core/Database.php';
 
 class Aluno {
     private $id_aluno;
@@ -10,7 +10,7 @@ class Aluno {
     private $cpf;
     private $senha; 
     private $nivelFoco;
-    private $tipo_usuario;
+    private $tipo_usuario; // Propriedade adicionada
 
     public function __construct() {}
 
@@ -38,7 +38,7 @@ class Aluno {
 
     public function setNivelFoco($nivelFoco) { $this->nivelFoco = $nivelFoco; }
     public function getNivelFoco() { return $this->nivelFoco; }
-
+    
     public function setTipoUsuario($tipo) { $this->tipo_usuario = $tipo; }
     public function getTipoUsuario() { return $this->tipo_usuario; }
 
@@ -62,11 +62,12 @@ class Aluno {
         }
     }
 
-    // =================== CADASTRAR ===================
+    // =================== CADASTRAR (MODIFICADO) ===================
     public function cadastrar(): bool {
         $db = Database::getConexao();
         $db->beginTransaction();
         try {
+            // 1. Inserir em 'pessoa'
             $sqlPessoa = "INSERT INTO pessoa (nome, email, telefone) VALUES (:nome, :email, :telefone)";
             $stmtPessoa = $db->prepare($sqlPessoa);
             $stmtPessoa->execute([
@@ -76,17 +77,23 @@ class Aluno {
             ]);
             $idPessoa = $db->lastInsertId();
 
-            $sqlAluno = "INSERT INTO aluno (nome_usuario, email, telefone, cpf, senha_hash, fk_pessoa, nivel_foco, data_cadastro)
-                         VALUES (:nome_usuario, :email, :telefone, :cpf, :senha_hash, :fk_pessoa, :nivel_foco, NOW())";
+            // 2. Inserir em 'aluno' (COM TIPO_USUARIO)
+            // ===== SQL MODIFICADA =====
+            $sqlAluno = "INSERT INTO aluno (nome_usuario, email, telefone, cpf, senha_hash, fk_pessoa, nivel_foco, tipo_usuario, data_cadastro)
+                         VALUES (:nome_usuario, :email, :telefone, :cpf, :senha_hash, :fk_pessoa, :nivel_foco, :tipo_usuario, NOW())";
+            
             $stmtAluno = $db->prepare($sqlAluno);
+            
+            // ===== EXECUTE MODIFICADO =====
             $stmtAluno->execute([
                 ':nome_usuario' => $this->nomeUsuario,
                 ':email' => $this->email,
                 ':telefone' => $this->telefone,
                 ':cpf' => $this->cpf,
-                ':senha_hash' => password_hash($this->senha, PASSWORD_DEFAULT),
+                ':senha_hash' => password_hash($this->senha, PASSWORD_DEFAULT), // Criptografa a senha pura aqui
                 ':fk_pessoa' => $idPessoa,
-                ':nivel_foco' => $this->nivelFoco
+                ':nivel_foco' => $this->nivelFoco,
+                ':tipo_usuario' => $this->tipo_usuario // Passa o tipo de usuário
             ]);
 
             $db->commit();
@@ -94,22 +101,20 @@ class Aluno {
             return true;
         } catch (PDOException $e) {
             $db->rollBack();
-            error_log("Erro no cadastro: " . $e->getMessage());
+            error_log("Erro no cadastro (Aluno.php): " . $e->getMessage()); // Log mais específico
             return false;
         }
     }
 
-    // =================== AUTENTICAR ===================
+    // =================== AUTENTICAR (MODIFICADO) ===================
     public static function autenticar(string $login, string $senha): ?Aluno {
         $db = Database::getConexao();
-        $sql = "SELECT a.id_aluno, a.nome_usuario, a.email, a.senha_hash, a.nivel_foco, p.nome, a.telefone, a.cpf
+        
+        $sql = "SELECT a.id_aluno, a.nome_usuario, a.email, a.senha_hash, a.nivel_foco, p.nome, a.telefone, a.cpf, a.tipo_usuario
                 FROM aluno a
                 INNER JOIN pessoa p ON a.fk_pessoa = p.id_pessoa
                 WHERE a.email = :email OR a.nome_usuario = :usuario
                 LIMIT 1";
-
-        $sql = "SELECT a.id_aluno, a.nome_usuario, a.email, a.senha_hash, a.nivel_foco, p.nome, a.telefone, a.cpf, a.tipo_usuario
-        FROM aluno a
 
         try {
             $stmt = $db->prepare($sql);
@@ -167,6 +172,7 @@ class Aluno {
 
     // =================== ATUALIZAR PERFIL ===================
     public function atualizarPerfil(): bool {
+        // (Este método não foi modificado, mas está aqui para integridade)
         $db = Database::getConexao();
         $db->beginTransaction();
         try {
