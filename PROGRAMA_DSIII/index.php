@@ -2,8 +2,6 @@
 declare(strict_types=1);
 define('BASE_PATH', __DIR__);
 
-
-
 // Inicia a sessão primeiro, antes de qualquer uso de variáveis de sessão
 session_start();
 
@@ -50,8 +48,6 @@ $algoritmo = new AlgoritmoSRS();
 
 // Pegar o código do aluno logado da sessão
 $perfilCodigo = $_SESSION['id_aluno'];
-
-
 
 // Processar ações AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -131,32 +127,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 exit;
 
-                case 'registrar_tempo':
-            try {
-                $segundos = (int)($_POST['segundos'] ?? 0);
-                if ($segundos > 0) {
-                    $cartaoRepo->adicionarTempoEstudo($perfilCodigo, $segundos);
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Segundos inválidos']);
+            case 'registrar_tempo':
+                try {
+                    $segundos = (int)($_POST['segundos'] ?? 0);
+                    if ($segundos > 0) {
+                        $cartaoRepo->adicionarTempoEstudo($perfilCodigo, $segundos);
+                        echo json_encode(['success' => true]);
+                    } else {
+                        echo json_encode(['success' => false, 'message' => 'Segundos inválidos']);
+                    }
+                } catch (Exception $e) {
+                    echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
                 }
-            } catch (Exception $e) {
-                echo json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]);
-            }
-            exit;
+                exit;
         
-    }
-}
-        }
-    
+        } // Fim do switch
+    } // Fim do if(isset)
+} // Fim do if(POST)
+// O '}' EXTRA ESTAVA AQUI E FOI REMOVIDO.
 
-// Buscar dados
+// =======================================================
+// ==== INÍCIO DO BLOCO DE LÓGICA (ANTES DA VIEW) ====
+// =======================================================
+
+// 1. Buscar dados dos baralhos
 $baralhos = $baralhoRepo->buscarComEstatisticas($perfilCodigo);
 $totalParaRevisar = 0;
 foreach ($baralhos as $baralho) {
     $totalParaRevisar += (int) $baralho['paraRevisar'];
 }
 
+// 2. Encontrar o próximo cartão para estudar
 $cartaoAtual = null;
 $baralhoAtual = null;
 foreach ($baralhos as $baralho) {
@@ -168,8 +169,8 @@ foreach ($baralhos as $baralho) {
     }
 }
 
+// 3. Calcular estatísticas totais
 $totalCartoes = 0;
-$taxaAcerto = 0;
 $totalRevisoes = 0;
 $totalAcertos = 0;
 
@@ -180,13 +181,19 @@ foreach ($baralhos as $baralho) {
     $totalAcertos += (int) $stats['totalAcertos'];
 }
 
+// 4. Calcular Taxa de Acerto (Corrigido)
 if ($totalRevisoes > 0) {
-    $taxaAcerto = round(($totalAcertos / $totalRevisoes) * 100);
-    $calendario = $cartaoRepo->getCalendarioRevisoes($perfilCodigo);
-    $diasConsecutivos = $cartaoRepo->getDiasConsecutivos($perfilCodigo);
-    $statsHoje = $cartaoRepo->getEstatisticasHoje($perfilCodigo);
-    $tempoEstudoHoje = $statsHoje['tempoEstudo'] ?? 0; // Pega o tempo de hoje ou 0
-    $cartaoAtual = null;
+    $taxaAcerto = (int) round(($totalAcertos / $totalRevisoes) * 100);
+} else {
+    $taxaAcerto = 0; // Define 0 se nunca revisou
 }
+
+// 5. Buscar dados de estatísticas (Corrigido - Movido para fora do 'if')
+$calendario = $cartaoRepo->getCalendarioRevisoes($perfilCodigo);
+$diasConsecutivos = $cartaoRepo->getDiasConsecutivos($perfilCodigo);
+$statsHoje = $cartaoRepo->getEstatisticasHoje($perfilCodigo);
+$tempoEstudoHoje = $statsHoje['tempoEstudo'] ?? 0;
+
+// 6. Chamar a View
 require_once 'views/v_dashboard.php';
 ?>

@@ -19,8 +19,6 @@
             padding: 20px;
         }
 
-        
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -65,10 +63,24 @@
             color: #999;
         }
 
+        .logout-btn {
+            color: #ff6b6b;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+
         .nav-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .nav-tab {
@@ -88,6 +100,7 @@
 
         .nav-tab:hover {
             background: #3d3d54;
+            transform: translateY(-2px);
         }
 
         .nav-tab.active {
@@ -95,18 +108,13 @@
             color: white;
         }
 
-        /* CSS para o Efeito FADE */
         .content-section {
             display: none;
-            opacity: 0; /* Começa invisível */
-            transition: opacity 0.4s ease-in-out; /* A mágica do fade! */
         }
 
         .content-section.active {
             display: block;
-            opacity: 1; /* Fica visível quando 'active' */
         }
-        /* Fim do CSS para FADE */
 
         .study-area {
             background: #1a1a2e;
@@ -456,6 +464,11 @@
                 text-align: center;
             }
 
+            .header-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
             .nav-tabs {
                 flex-wrap: wrap;
             }
@@ -463,39 +476,45 @@
             .action-buttons {
                 flex-direction: column;
             }
+
+            .deck-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-    
-    <h1><i class="fas fa-brain"></i> StudyCards</h1>
-
-    <div class="header-stats">
-        <div class="header-stat">
-            <div class="header-stat-value"><?= $totalParaRevisar ?></div>
-            <div class="header-stat-label">Para Revisar</div>
-        </div>
-        <div class="header-stat">
-            <div class="header-stat-value"><?= $taxaAcerto ?>%</div>
-            <div class="header-stat-label">Taxa de Acerto</div>
-        </div>
-    </div>
-    <div>
-        <a href="Controller/logout.php" style="color: #ff6b6b; font-weight: bold; text-decoration: none; margin-left: 20px;">Sair</a>
-    </div>
-</div>
-
+            <h1><i class="fas fa-brain"></i> StudyCards</h1>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value"><?= $totalParaRevisar ?></div>
+                    <div class="header-stat-label">Para Revisar</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value"><?= $taxaAcerto ?>%</div>
+                    <div class="header-stat-label">Taxa de Acerto</div>
                 </div>
             </div>
+            <a href="Controller/logout.php" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </div>
 
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showSection('study', event)">🎯 Estudar</button>
-            <button class="nav-tab" onclick="showSection('decks', event)">📦 Meus Baralhos</button>
-            <button class="nav-tab" onclick="showSection('new', event)">➕ Novo Cartão</button>
-            <button class="nav-tab" onclick="showSection('stats', event)">📊 Estatísticas</button>
+            <button class="nav-tab active" data-section="study">
+                <i class="fas fa-graduation-cap"></i> Estudar
+            </button>
+            <button class="nav-tab" data-section="decks">
+                <i class="fas fa-layer-group"></i> Meus Baralhos
+            </button>
+            <button class="nav-tab" data-section="new">
+                <i class="fas fa-plus-circle"></i> Novo Cartão
+            </button>
+            <button class="nav-tab" data-section="stats">
+                <i class="fas fa-chart-line"></i> Estatísticas
+            </button>
         </div>
 
         <div id="study" class="content-section active">
@@ -553,8 +572,8 @@
                     </div>
                 <?php endforeach; ?>
 
-                <div class="create-deck-button" onclick="showSection('new-deck', event)">
-                    ➕ Criar Novo Baralho
+                <div class="create-deck-button">
+                    <i class="fas fa-plus"></i> Criar Novo Baralho
                 </div>
             </div>
         </div>
@@ -578,7 +597,7 @@
 
                     <div class="form-group">
                         <label>Pergunta (Frente do Cartão)</label>
-                        <textarea name="pergunta" placeholder="Ex: O que é desencapsulamento?" required></textarea>
+                        <textarea name="pergunta" placeholder="Ex: O que é encapsulamento?" required></textarea>
                     </div>
 
                     <div class="form-group">
@@ -614,7 +633,6 @@
                 </form>
             </div>
         </div>
-
 
         <div id="stats" class="content-section">
             <div class="stats-grid">
@@ -669,7 +687,6 @@
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            
         </div>
     </div>
 
@@ -681,37 +698,61 @@
         };
         const cartaoId = <?= $cartaoAtual ? $cartaoAtual->id : 'null' ?>;
 
-        /* ============================================== */
-        /* ===== JAVASCRIPT 'showSection' CORRIGIDO ===== */
-        /* ============================================== */
-        function showSection(sectionId, event) {
-            // 1. Oculta todas as seções de conteúdo
+        // --- FUNÇÃO showSection CORRIGIDA ---
+        function showSection(sectionId) {
+            // 1. Oculta todas as seções
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // 2. Remove 'active' de todas as ABAS
+            // 2. Remove 'active' de todas as abas
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
 
-            // 3. Adiciona 'active' de volta à ABA que foi clicada
-            //    (Usando event.currentTarget, que é o <button> em si)
-            if (event && event.currentTarget && event.currentTarget.classList.contains('nav-tab')) {
-                event.currentTarget.classList.add('active');
+            // 3. Mostra a seção clicada
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
             }
             
-            // 4. Se o clique veio do "Criar Baralho", re-ativa a aba "Meus Baralhos"
+            // 4. Ativa a aba principal correta
+            let targetTab;
             if (sectionId === 'new-deck') {
-                // Encontra a aba "Meus Baralhos" e a torna ativa
-                document.querySelector('button[onclick*="decks"]').classList.add('active');
+                // Se for 'new-deck', ativa a aba 'decks'
+                targetTab = document.querySelector('.nav-tab[data-section="decks"]');
+            } else {
+                // Senão, ativa a aba com o mesmo data-section
+                targetTab = document.querySelector(`.nav-tab[data-section="${sectionId}"]`);
             }
-
-            // 5. Mostra a seção de conteúdo correta
-            document.getElementById(sectionId).classList.add('active');
+            
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
         }
-        /* ============================================== */
 
+        // --- O "ADESIVO" QUE FAZ AS ABAS FUNCIONAREM ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adiciona o 'click listener' para as ABAS PRINCIPAIS
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
+                });
+            });
+
+            // Adiciona o 'click listener' para o BOTÃO "CRIAR BARALHO"
+            const createDeckBtn = document.querySelector('.create-deck-button');
+            createDeckBtn.addEventListener('click', function() {
+                // O botão "Criar Baralho" não tem data-section,
+                // então chamamos a seção 'new-deck' diretamente.
+                showSection('new-deck');
+            });
+        });
+
+
+        // --- O RESTANTE DAS SUAS FUNÇÕES (sem alteração) ---
         function flipCard() {
             const card = document.getElementById('flashcard');
             const content = card.querySelector('.card-content');
@@ -750,6 +791,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Corrigindo um pequeno typo que eu tinha feito antes:
+                    // '_ + data.proximaRevisao' virou '\n' + data.proximaRevisao
                     alert(data.message + '\nPróxima revisão: ' + data.proximaRevisao);
                     location.reload();
                 } else {
@@ -813,9 +856,7 @@
             });
         }
 
-        /**
-         * Timer de Tempo de Estudo
-         */
+        // Timer de Tempo de Estudo
         setInterval(function() {
             const formData = new FormData();
             formData.append('action', 'registrar_tempo');
